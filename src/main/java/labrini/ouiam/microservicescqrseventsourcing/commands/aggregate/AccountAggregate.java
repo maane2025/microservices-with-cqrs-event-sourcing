@@ -2,9 +2,11 @@ package labrini.ouiam.microservicescqrseventsourcing.commands.aggregate;
 
 import labrini.ouiam.microservicescqrseventsourcing.commandsApi.commands.CreateAccountCommand;
 import labrini.ouiam.microservicescqrseventsourcing.commandsApi.commands.CreditAccountCommand;
+import labrini.ouiam.microservicescqrseventsourcing.commandsApi.commands.DebitAccountCommand;
 import labrini.ouiam.microservicescqrseventsourcing.commandsApi.enums.AccountStatus;
 import labrini.ouiam.microservicescqrseventsourcing.commandsApi.events.AccountCreatedEvent;
 import labrini.ouiam.microservicescqrseventsourcing.commandsApi.events.AccountCreditedEvent;
+import labrini.ouiam.microservicescqrseventsourcing.commandsApi.events.AccountDebitedEvent;
 import org.axonframework.commandhandling.CommandHandler;
 import org.axonframework.eventsourcing.EventSourcingHandler;
 import org.axonframework.modelling.command.AggregateIdentifier;
@@ -62,8 +64,25 @@ public class AccountAggregate {
     // *********************** Event sourcing handler for AccountCreditedEvent ************************//
     @EventSourcingHandler
     public void on(AccountCreditedEvent event) {
-        this.accountId = event.getId();
-        this.currency = event.getCurrency();
         this.balance += event.getAmount();
+    }
+
+    // *********************** Command handler for DebitAccountCommand ************************//
+    @CommandHandler
+    public void handle(DebitAccountCommand command) {
+        if(command.getAmount() > this.balance) {
+            throw new RuntimeException("Insufficient balance");
+        }
+        AggregateLifecycle.apply(new AccountDebitedEvent(
+                command.getId(),
+                command.getAmount(),
+                command.getCurrency()
+        ));
+    }
+
+    // ********************** Event sourcing handler for AccountDebitedEvent ************************//
+    @EventSourcingHandler
+    public void on(AccountDebitedEvent event) {
+        this.balance -= event.getAmount();
     }
 }

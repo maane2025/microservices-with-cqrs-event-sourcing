@@ -2,8 +2,10 @@ package labrini.ouiam.microservicescqrseventsourcing.commands.controllers;
 
 import labrini.ouiam.microservicescqrseventsourcing.commandsApi.commands.CreateAccountCommand;
 import labrini.ouiam.microservicescqrseventsourcing.commandsApi.commands.CreditAccountCommand;
+import labrini.ouiam.microservicescqrseventsourcing.commandsApi.commands.DebitAccountCommand;
 import labrini.ouiam.microservicescqrseventsourcing.commandsApi.dto.CreateAccountDTO;
 import labrini.ouiam.microservicescqrseventsourcing.commandsApi.dto.CreditAccountDTO;
+import labrini.ouiam.microservicescqrseventsourcing.commandsApi.dto.DebitAccountDTO;
 import lombok.AllArgsConstructor;
 import org.axonframework.commandhandling.gateway.CommandGateway;
 import org.axonframework.eventsourcing.eventstore.EventStore;
@@ -34,6 +36,16 @@ public class AccountCommandController {
     @PostMapping("/credit")
         public CompletableFuture<String> creditAccount(@RequestBody CreditAccountDTO request) {
         CompletableFuture<String> result = commandGateway.send(new CreditAccountCommand(
+                request.accountId(),
+                request.amount(),
+                request.currency()
+        ));
+        return result;
+    }
+
+    @PostMapping("/debit")
+    public CompletableFuture<String> debitAccount(@RequestBody DebitAccountDTO request) {
+        CompletableFuture<String> result = commandGateway.send(new DebitAccountCommand(
                 request.accountId(),
                 request.amount(),
                 request.currency()
