@@ -1,4 +1,4 @@
 package labrini.ouiam.microservicescqrseventsourcing.query.queries;
 
-public class GetAllAccounts {
+public class GetAllAccountTransaction {
 }
